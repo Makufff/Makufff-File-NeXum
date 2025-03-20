@@ -7,6 +7,7 @@ RUN npm install -g pnpm
 
 COPY package.json pnpm-lock.yaml ./
 
+# Install dependencies including cross-env
 RUN pnpm install
 
 FROM base AS builder
@@ -32,10 +33,13 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 
+# Copy the standalone output and its dependencies
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.env ./.env
 
+# Ensure proper permissions
 RUN chown -R nextjs:nodejs .
 
 USER nextjs
