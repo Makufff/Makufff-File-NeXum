@@ -8,12 +8,18 @@ import { UploadStats } from "@/components/upload-stats"
 import type { ApiResponse } from "@/types/api"
 import { ArrowLeft, Upload, FileImage, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { env } from "@/config/env"
 
 export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadResponse, setUploadResponse] = useState<ApiResponse | null>(null)
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([])
   const [glitchActive, setGlitchActive] = useState(false)
+  const [files, setFiles] = useState<File[]>([])
+  const [progress, setProgress] = useState(0)
+  const [processedFiles, setProcessedFiles] = useState(0)
+  const [totalSize, setTotalSize] = useState(0)
+  const [processedSize, setProcessedSize] = useState(0)
 
   // Randomly trigger glitch effect
   useEffect(() => {
@@ -27,39 +33,53 @@ export default function UploadPage() {
     return () => clearInterval(glitchInterval)
   }, [])
 
-  const handleUpload = async (files: File[]) => {
-    if (files.length === 0) return
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files)
+      
+      // Check file sizes
+      const oversizedFiles = selectedFiles.filter(file => file.size > env.maxFileSize)
+      if (oversizedFiles.length > 0) {
+        alert(`Some files exceed the maximum size of ${env.maxFileSize / (1024 * 1024)}MB`)
+        return
+      }
+
+      setFiles(selectedFiles)
+      setTotalSize(selectedFiles.reduce((acc, file) => acc + file.size, 0))
+      setProcessedSize(0)
+      setProcessedFiles(0)
+      setProgress(0)
+    }
+  }
+
+  const handleUpload = async () => {
+    if (!files.length) return
 
     setIsUploading(true)
-    setUploadResponse(null)
-    setGlitchActive(true)
+    const formData = new FormData()
+
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i])
+    }
 
     try {
-      const formData = new FormData()
-      files.forEach((file) => {
-        formData.append("images", file)
-      })
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4813"}/upload`, {
+      const response = await fetch(`${env.apiUrl}/upload`, {
         method: "POST",
         body: formData,
       })
 
-      const data: ApiResponse = await response.json()
-      setUploadResponse(data)
-
-      if (data.status) {
-        setUploadedFiles((prev) => [...prev, ...data.file_paths])
+      if (!response.ok) {
+        throw new Error("Upload failed")
       }
-    } catch {
-      setUploadResponse({
-        status: false,
-        message: "An error occurred during upload",
-        file_paths: [],
-      })
+
+      setProgress(100)
+      setProcessedFiles(files.length)
+      setProcessedSize(totalSize)
+    } catch (error) {
+      console.error("Upload error:", error)
+      alert("Upload failed. Please try again.")
     } finally {
       setIsUploading(false)
-      setTimeout(() => setGlitchActive(false), 300)
     }
   }
 
@@ -81,7 +101,7 @@ export default function UploadPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <div className={`${glitchActive ? "glitch-card" : ""}`}>
-            <FileUploader onUpload={handleUpload} isUploading={isUploading} />
+            <FileUploader onUpload={handleUpload} isUploading={isUploading} onFileChange={handleFileChange} />
           </div>
 
           {uploadResponse && (
@@ -104,7 +124,13 @@ export default function UploadPage() {
 
         <div>
           <div className={`${glitchActive ? "glitch-card" : ""}`}>
-            <UploadStats />
+            <UploadStats
+              progress={progress}
+              totalFiles={files.length}
+              processedFiles={processedFiles}
+              totalSize={totalSize}
+              processedSize={processedSize}
+            />
           </div>
 
           {uploadedFiles.length > 0 && (

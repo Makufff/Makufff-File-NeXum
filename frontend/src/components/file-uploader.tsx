@@ -9,9 +9,10 @@ import { Progress } from "@/components/ui/progress"
 interface FileUploaderProps {
   onUpload: (files: File[]) => void
   isUploading: boolean
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-export function FileUploader({ onUpload, isUploading }: FileUploaderProps) {
+export function FileUploader({ onUpload, isUploading, onFileChange }: FileUploaderProps) {
   const [dragActive, setDragActive] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [validationError, setValidationError] = useState<string | null>(null)
