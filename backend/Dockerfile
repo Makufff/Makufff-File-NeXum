@@ -1,4 +1,4 @@
-FROM rust:1.76 as builder
+FROM rustlang/rust:nightly as builder
 
 WORKDIR /app
 
@@ -9,7 +9,8 @@ RUN cargo update && cargo build --release
 
 RUN rm -rf src
 
-COPY . .
+COPY src ./src
+COPY data ./data
 
 RUN cargo build --release
 
