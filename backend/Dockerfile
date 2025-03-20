@@ -1,24 +1,18 @@
-FROM rustlang/rust:nightly as builder
+FROM rust:latest AS builder
 
 WORKDIR /app
 
-COPY Cargo.toml ./
+COPY Cargo.toml Cargo.lock ./
 
-RUN mkdir -p src && echo "fn main() {}" > src/main.rs
-RUN cargo update && cargo build --release
-
-RUN rm -rf src
+RUN mkdir -p src && \
+    echo "fn main() {}" > src/main.rs && \
+    cargo build --release && \
+    rm -rf src
 
 COPY src ./src
-RUN mkdir -p data
-
 RUN cargo build --release
 
-FROM debian:bullseye-slim
-
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+FROM rust:latest
 
 WORKDIR /app
 
