@@ -5,7 +5,7 @@ use axum::{
 use axum::http::header;
 use std::net::SocketAddr;
 use tokio::fs;
-use tower_http::cors::{CorsLayer, AllowOrigin};
+use tower_http::cors::CorsLayer;
 use crate::controllers::upload_controller::upload_handler;
 use crate::models::upload_model::AppState;
 
