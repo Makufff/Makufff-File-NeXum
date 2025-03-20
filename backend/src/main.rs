@@ -23,7 +23,7 @@ async fn main() {
     let state = AppState { upload_folder };
 
     let cors = CorsLayer::new()
-        .allow_origin(AllowOrigin::any())
+        .allow_origin("http://localhost:4812".parse::<header::HeaderValue>().unwrap())
         .allow_methods([axum::http::Method::GET, axum::http::Method::POST])
         .allow_headers([header::CONTENT_TYPE])
         .allow_credentials(true);
