@@ -51,7 +51,7 @@ export default function UploadPage() {
       if (data.status) {
         setUploadedFiles((prev) => [...prev, ...data.file_paths])
       }
-    } catch (error) {
+    } catch {
       setUploadResponse({
         status: false,
         message: "An error occurred during upload",

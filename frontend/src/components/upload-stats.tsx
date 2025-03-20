@@ -40,7 +40,7 @@ export function UploadStats() {
             <div>
               <h3 className="font-medium">API Endpoint</h3>
               <p className="text-sm text-muted-foreground">POST {process.env.NEXT_PUBLIC_API_URL || "http://localhost:4813"}/upload</p>
-              <p className="text-sm text-muted-foreground">Form key: "images"</p>
+              <p className="text-sm text-muted-foreground">Form key: &quot;images&quot;</p>
             </div>
           </div>
         </div>

@@ -81,12 +81,11 @@ export default function LandingPage() {
             </div>
             <div className="terminal-content">
               <p className="mb-2">
-                <span className="text-primary">$</span> curl -X POST -F "images=@image.png" {process.env.NEXT_PUBLIC_API_URL || "http://localhost:4813"}/upload
+                <span className="text-primary">$</span> curl -X POST -F &quot;images=@image.png&quot; {process.env.NEXT_PUBLIC_API_URL || "http://localhost:4813"}/upload
               </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                {"{"} "status": true, "message": "Files uploaded successfully", "file_paths": ["/data/abc123xyz.png"]{" "}
-                {"}"}
-              </p>
+              <pre className="text-sm text-muted-foreground mb-4">
+                {JSON.stringify({ status: true, message: "Files uploaded successfully", file_paths: ["/data/abc123xyz.png"] }, null, 2)}
+              </pre>
               <p className="text-primary">Ready to try it yourself?</p>
             </div>
           </div>

@@ -7,6 +7,7 @@ RUN npm install -g pnpm
 
 COPY package.json pnpm-lock.yaml ./
 
+# Install dependencies including cross-env
 RUN pnpm install
 
 FROM base AS builder
@@ -16,7 +17,8 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN npm run build
+# Use the Windows-compatible build script instead
+RUN pnpm run build
 
 FROM base AS runner
 WORKDIR /app
@@ -30,11 +32,13 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 
-RUN mkdir .next
+# Only create the .next directory if it doesn't exist
+RUN mkdir -p .next
 RUN chown nextjs:nodejs .next
 
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy the standalone output without using symlinks
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
 USER nextjs
 
