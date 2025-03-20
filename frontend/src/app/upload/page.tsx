@@ -1,0 +1,140 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { FileUploader } from "@/components/file-uploader"
+import { UploadedFiles } from "@/components/uploaded-files"
+import { UploadStats } from "@/components/upload-stats"
+import type { ApiResponse } from "@/types/api"
+import { ArrowLeft, Upload, FileImage, AlertCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+export default function UploadPage() {
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadResponse, setUploadResponse] = useState<ApiResponse | null>(null)
+  const [uploadedFiles, setUploadedFiles] = useState<string[]>([])
+  const [glitchActive, setGlitchActive] = useState(false)
+
+  // Randomly trigger glitch effect
+  useEffect(() => {
+    const glitchInterval = setInterval(() => {
+      if (Math.random() > 0.7) {
+        setGlitchActive(true)
+        setTimeout(() => setGlitchActive(false), 200)
+      }
+    }, 3000)
+
+    return () => clearInterval(glitchInterval)
+  }, [])
+
+  const handleUpload = async (files: File[]) => {
+    if (files.length === 0) return
+
+    setIsUploading(true)
+    setUploadResponse(null)
+    setGlitchActive(true)
+
+    try {
+      const formData = new FormData()
+      files.forEach((file) => {
+        formData.append("images", file)
+      })
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4813"}/upload`, {
+        method: "POST",
+        body: formData,
+      })
+
+      const data: ApiResponse = await response.json()
+      setUploadResponse(data)
+
+      if (data.status) {
+        setUploadedFiles((prev) => [...prev, ...data.file_paths])
+      }
+    } catch (error) {
+      setUploadResponse({
+        status: false,
+        message: "An error occurred during upload",
+        file_paths: [],
+      })
+    } finally {
+      setIsUploading(false)
+      setTimeout(() => setGlitchActive(false), 300)
+    }
+  }
+
+  return (
+    <main className={`container mx-auto px-4 py-8 ${glitchActive ? "glitch-container" : ""}`}>
+      <div className="mb-8">
+        <Link href="/">
+          <Button variant="ghost" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Button>
+        </Link>
+      </div>
+
+      <h1 className="text-3xl font-bold text-center mb-8 glitch" data-text="File Upload System">
+        File Upload System
+      </h1>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <div className={`${glitchActive ? "glitch-card" : ""}`}>
+            <FileUploader onUpload={handleUpload} isUploading={isUploading} />
+          </div>
+
+          {uploadResponse && (
+            <div
+              className={`mt-6 p-4 rounded-md ${uploadResponse.status ? "bg-primary/10 text-primary border border-primary/30" : "bg-destructive/10 text-destructive border border-destructive/30"} ${glitchActive ? "glitch-text" : ""}`}
+            >
+              <p className="font-medium">{uploadResponse.message}</p>
+              {uploadResponse.file_paths.length > 0 && (
+                <ul className="mt-2 text-sm">
+                  {uploadResponse.file_paths.map((path, index) => (
+                    <li key={index} className="truncate">
+                      {path}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className={`${glitchActive ? "glitch-card" : ""}`}>
+            <UploadStats />
+          </div>
+
+          {uploadedFiles.length > 0 && (
+            <div className={`mt-6 ${glitchActive ? "glitch-card" : ""}`}>
+              <h2 className="text-xl font-semibold mb-4 glitch" data-text="Uploaded Files">
+                Uploaded Files
+              </h2>
+              <UploadedFiles files={uploadedFiles} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Glitch overlay elements */}
+      <div className={`glitch-overlay ${glitchActive ? "active" : ""}`}></div>
+      <div className={`glitch-scanlines ${glitchActive ? "active" : ""}`}></div>
+
+      {/* Floating glitch elements */}
+      <div className="fixed pointer-events-none z-10">
+        <div className={`glitch-element upload-icon ${Math.random() > 0.5 ? "active" : ""}`}>
+          <Upload className="h-8 w-8 text-primary opacity-30" />
+        </div>
+        <div className={`glitch-element file-icon ${Math.random() > 0.5 ? "active" : ""}`}>
+          <FileImage className="h-8 w-8 text-primary opacity-30" />
+        </div>
+        <div className={`glitch-element alert-icon ${Math.random() > 0.5 ? "active" : ""}`}>
+          <AlertCircle className="h-8 w-8 text-destructive opacity-30" />
+        </div>
+      </div>
+    </main>
+  )
+}
+
