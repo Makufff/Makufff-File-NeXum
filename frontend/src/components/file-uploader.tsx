@@ -71,11 +71,12 @@ export function FileUploader({ onUpload, isUploading, onFileChange }: FileUpload
     }
   }
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const filesArray = Array.from(e.target.files)
       if (validateFiles(filesArray)) {
         setSelectedFiles(filesArray)
+        onFileChange(e) // Call the parent's onFileChange handler
       }
     }
   }
@@ -119,7 +120,7 @@ export function FileUploader({ onUpload, isUploading, onFileChange }: FileUpload
             type="file"
             multiple
             accept={ALLOWED_TYPES.join(",")}
-            onChange={handleFileChange}
+            onChange={handleFileInputChange}
             className="hidden"
           />
 

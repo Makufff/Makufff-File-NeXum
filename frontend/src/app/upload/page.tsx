@@ -56,6 +56,9 @@ export default function UploadPage() {
     if (!files.length) return
 
     setIsUploading(true)
+    setUploadResponse(null)
+    setGlitchActive(true)
+
     const formData = new FormData()
 
     for (let i = 0; i < files.length; i++) {
@@ -72,14 +75,27 @@ export default function UploadPage() {
         throw new Error("Upload failed")
       }
 
+      const data: ApiResponse = await response.json()
+      setUploadResponse(data)
+
+      if (data.status) {
+        setUploadedFiles(prev => [...prev, ...data.file_paths])
+      }
+
       setProgress(100)
       setProcessedFiles(files.length)
       setProcessedSize(totalSize)
     } catch (error) {
       console.error("Upload error:", error)
+      setUploadResponse({
+        status: false,
+        message: "Upload failed. Please try again.",
+        file_paths: [],
+      })
       alert("Upload failed. Please try again.")
     } finally {
       setIsUploading(false)
+      setTimeout(() => setGlitchActive(false), 300)
     }
   }
 
