@@ -25,7 +25,6 @@ WORKDIR /app
 RUN mkdir -p /app/data
 
 COPY --from=builder /app/target/release/backend /app/backend
-COPY --from=builder /app/data /app/data
 
 EXPOSE 4813
 
