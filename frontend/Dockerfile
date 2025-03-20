@@ -32,13 +32,11 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 
-# Only create the .next directory if it doesn't exist
-RUN mkdir -p .next
-RUN chown nextjs:nodejs .next
-
-# Copy the standalone output without using symlinks
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/node_modules ./node_modules
+
+RUN chown -R nextjs:nodejs .
 
 USER nextjs
 
