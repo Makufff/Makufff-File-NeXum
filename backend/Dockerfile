@@ -10,7 +10,7 @@ RUN cargo update && cargo build --release
 RUN rm -rf src
 
 COPY src ./src
-COPY data ./data
+RUN mkdir -p data
 
 RUN cargo build --release
 
