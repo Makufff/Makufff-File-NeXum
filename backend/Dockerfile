@@ -1,4 +1,4 @@
-FROM rust:latest AS builder
+FROM rustlang/rust:nightly AS builder
 
 WORKDIR /app
 
@@ -6,13 +6,13 @@ COPY Cargo.toml Cargo.lock ./
 
 RUN mkdir -p src && \
     echo "fn main() {}" > src/main.rs && \
-    cargo build --release && \
+    cargo +nightly build --release && \
     rm -rf src
 
 COPY src ./src
-RUN cargo build --release
+RUN cargo +nightly build --release
 
-FROM rust:latest
+FROM rustlang/rust:nightly
 
 WORKDIR /app
 
