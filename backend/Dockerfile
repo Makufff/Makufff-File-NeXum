@@ -2,10 +2,10 @@ FROM rust:1.76 as builder
 
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
 
 RUN mkdir -p src && echo "fn main() {}" > src/main.rs
-RUN cargo build --release
+RUN cargo update && cargo build --release
 
 RUN rm -rf src
 
